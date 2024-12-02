@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String            @id @default(uuid())
+  fname         String
+  lname         String
+  age           Int
+  email         String            @unique
+  password      String
+  pic           String?
+  gender        String
+  isVerified    Boolean
+  expense       Expense[]
+  type          ExpenseType[]
+  category      ExpenseCategory[]
+  budget        Budget[]
+  notifications Notification[]
+  verify        verify?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Expense {
+  id                String          @id @default(uuid())
+  title             String
+  description       String
+  amount            Float
+  date              String?
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId            String
+  type              ExpenseType     @relation(fields: [expenseTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expenseTypeId     String
+  category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expenseCategoryId String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model ExpenseType {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expense     Expense[]
+  budget      Budget[]
+  userId      String?
+  isCommon    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String?
+  expense     Expense[]
+  budget      Budget[]
+  isCommon    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Budget {
+  id                String          @id @default(uuid())
+  startDate         DateTime?
+  endDate           DateTime?
+  amount            Float?
+  limitAmount       Float
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId            String
+  category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expenseCategoryId String
+  type              ExpenseType?    @relation(fields: [expenseTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expenseTypeId     String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  isRead      Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String
+  createdAt   DateTime @default(now())
+  reminderAt  DateTime @default(now())
+}
+
+model verify {
+  id        String   @id @default(uuid())
+  key       String
+  limitTime DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String   @unique
+  createdAt DateTime @default(now())
+}
+
+model logs {
+  id         String   @id @default(uuid())
+  url        String
+  payload    String
+  response   String
+  statusCode Int
+  createdAt  DateTime @default(now())
+}
